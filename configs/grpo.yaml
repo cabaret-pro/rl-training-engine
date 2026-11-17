@@ -1,0 +1,36 @@
+experiment:
+  name: grpo-baseline
+  seed: 42
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  revision: main
+  dtype: bfloat16
+algorithm:
+  name: grpo
+  group_size: 8
+  clip_epsilon: 0.2
+  kl_coefficient: 0.01
+  advantage_epsilon: 1.0e-6
+  loss_normalization: token_mean
+training:
+  learning_rate: 1.0e-6
+  batch_size: 8
+  gradient_accumulation_steps: 4
+  max_steps: 1000
+  max_grad_norm: 1.0
+rollout:
+  backend: transformers
+  temperature: 1.0
+  max_completion_tokens: 256
+reward:
+  name: arithmetic
+evaluation:
+  interval_steps: 100
+  num_examples: 200
+checkpoint:
+  interval_steps: 100
+  keep_last: 3
+logging:
+  backend: console
+  interval_steps: 10
+
