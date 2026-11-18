@@ -41,6 +41,8 @@ class Trajectory:
     def __post_init__(self) -> None:
         _require_vector("prompt_ids", self.prompt_ids)
         _require_vector("completion_ids", self.completion_ids)
+        if self.prompt_ids.shape[0] == 0:
+            raise ValueError("a trajectory must contain at least one prompt token")
         completion_length = self.completion_ids.shape[0]
         _require_vector(
             "attention_mask",
