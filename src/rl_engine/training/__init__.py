@@ -1,5 +1,6 @@
 """Optimization and training lifecycle components."""
 
+from rl_engine.training.checkpoint import load_checkpoint, save_checkpoint, validate_checkpoint
 from rl_engine.training.coordinator import (
     CoordinatorConfig,
     CoordinatorMetrics,
@@ -22,7 +23,11 @@ __all__ = [
     "TrainingCoordinator",
     "TrainingRunSummary",
     "UpdateMetrics",
+    "load_checkpoint",
+    "save_checkpoint",
     "train_from_config",
+    "validate_checkpoint",
 ]
+
 
 
