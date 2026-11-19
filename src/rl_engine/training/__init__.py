@@ -5,6 +5,7 @@ from rl_engine.training.coordinator import (
     CoordinatorMetrics,
     TrainingCoordinator,
 )
+from rl_engine.training.runtime import TrainingRunSummary, train_from_config
 from rl_engine.training.trainer import (
     GRPOTrainer,
     GRPOTrainerConfig,
@@ -19,7 +20,9 @@ __all__ = [
     "GRPOTrainerConfig",
     "TrainerState",
     "TrainingCoordinator",
+    "TrainingRunSummary",
     "UpdateMetrics",
+    "train_from_config",
 ]
 
 
