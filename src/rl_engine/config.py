@@ -22,6 +22,7 @@ class ModelConfig(StrictModel):
     name: str = Field(min_length=1)
     revision: str | None = None
     dtype: Literal["float32", "float16", "bfloat16"] = "float32"
+    device: Literal["auto", "cpu", "cuda", "mps"] = "auto"
 
 
 class ReinforceConfig(StrictModel):
@@ -109,6 +110,11 @@ class EngineConfig(StrictModel):
             raise ValueError("vLLM rollout requires model.dtype to be float16 or bfloat16")
         if isinstance(self.algorithm, GRPOConfig) and self.algorithm.group_size < 2:
             raise ValueError("GRPO requires algorithm.group_size >= 2")
+        if (
+            isinstance(self.algorithm, GRPOConfig)
+            and self.training.max_steps % self.algorithm.optimization_epochs != 0
+        ):
+            raise ValueError("training.max_steps must be divisible by GRPO optimization_epochs")
         return self
 
 
