@@ -1,5 +1,10 @@
 """Optimization and training lifecycle components."""
 
+from rl_engine.training.coordinator import (
+    CoordinatorConfig,
+    CoordinatorMetrics,
+    TrainingCoordinator,
+)
 from rl_engine.training.trainer import (
     GRPOTrainer,
     GRPOTrainerConfig,
@@ -7,5 +12,14 @@ from rl_engine.training.trainer import (
     UpdateMetrics,
 )
 
-__all__ = ["GRPOTrainer", "GRPOTrainerConfig", "TrainerState", "UpdateMetrics"]
+__all__ = [
+    "CoordinatorConfig",
+    "CoordinatorMetrics",
+    "GRPOTrainer",
+    "GRPOTrainerConfig",
+    "TrainerState",
+    "TrainingCoordinator",
+    "UpdateMetrics",
+]
+
 

@@ -27,6 +27,15 @@ class Tokenizer(Protocol):
     def decode(self, token_ids: Sequence[int], *, skip_special_tokens: bool) -> str: ...
 
 
+class RolloutBackend(Protocol):
+    def generate(
+        self,
+        requests: Sequence[RolloutRequest],
+        *,
+        policy_version: int,
+    ) -> list["GeneratedCompletion"]: ...
+
+
 @dataclass(frozen=True, slots=True)
 class SamplingConfig:
     max_completion_tokens: int

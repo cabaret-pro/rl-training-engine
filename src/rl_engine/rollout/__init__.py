@@ -3,6 +3,7 @@
 from rl_engine.rollout.buffer import ExperienceBuffer, TrajectoryBatch, collate_trajectories
 from rl_engine.rollout.generator import (
     GeneratedCompletion,
+    RolloutBackend,
     SamplingConfig,
     TransformersRolloutBackend,
     evaluate_completions,
@@ -15,6 +16,7 @@ __all__ = [
     "GeneratedCompletion",
     "PromptRecord",
     "PromptSampler",
+    "RolloutBackend",
     "RolloutRequest",
     "SamplingConfig",
     "Trajectory",
