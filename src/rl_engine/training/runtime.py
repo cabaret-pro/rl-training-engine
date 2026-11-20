@@ -12,6 +12,7 @@ import torch
 
 from rl_engine.config import EngineConfig, GRPOConfig
 from rl_engine.evaluation.arithmetic import ArithmeticTaskConfig, generate_arithmetic_prompts
+from rl_engine.evaluation.evaluator import EvaluationMetrics, LanguageModelEvaluator
 from rl_engine.models.loading import load_causal_lm
 from rl_engine.models.policy import CausalLMPolicy
 from rl_engine.rewards.arithmetic import ArithmeticReward
@@ -36,6 +37,10 @@ class TrainingRunSummary:
     policy_version: int
     generated_tokens: int
     final_reward_mean: float
+    initial_evaluation_reward: float
+    final_evaluation_reward: float
+    initial_pass_rate: float
+    final_pass_rate: float
 
 
 def seed_everything(seed: int) -> None:
@@ -68,6 +73,7 @@ def console_metric_sink(metrics: dict[str, object]) -> None:
 
 def _metric_record(metrics: CoordinatorMetrics, state: TrainerState) -> dict[str, object]:
     return {
+        "kind": "training",
         "step": state.global_step,
         "policy_version": state.policy_version,
         "train": asdict(metrics.update),
@@ -79,6 +85,15 @@ def _metric_record(metrics: CoordinatorMetrics, state: TrainerState) -> dict[str
             "trajectories": metrics.trajectories,
             "policy_staleness": metrics.policy_staleness,
         },
+    }
+
+
+def _evaluation_record(metrics: EvaluationMetrics, state: TrainerState) -> dict[str, object]:
+    return {
+        "kind": "evaluation",
+        "step": state.global_step,
+        "policy_version": state.policy_version,
+        "evaluation": asdict(metrics),
     }
 
 
@@ -158,15 +173,39 @@ def train_from_config(
             pad_token_id=loaded.tokenizer.pad_token_id,
         ),
     )
+    evaluation_prompts = generate_arithmetic_prompts(
+        ArithmeticTaskConfig(
+            count=config.evaluation.num_examples,
+            seed=config.experiment.seed + 1,
+            split="evaluation",
+        )
+    )
+    evaluator = LanguageModelEvaluator(
+        loaded.model,
+        loaded.tokenizer,
+        ArithmeticReward(
+            success_reward=config.reward.success_reward,
+            failure_reward=config.reward.failure_reward,
+        ),
+        max_completion_tokens=config.rollout.max_completion_tokens,
+    )
+    initial_evaluation = evaluator.evaluate(evaluation_prompts)
+    metric_sink(_evaluation_record(initial_evaluation, trainer.state))
 
     generated_tokens = 0
     final_reward_mean = 0.0
+    final_evaluation = initial_evaluation
+    last_evaluation_step = trainer.state.global_step
     while trainer.state.global_step < config.training.max_steps:
         metrics = coordinator.run_step()
         generated_tokens += metrics.generated_tokens
         final_reward_mean = metrics.update.reward_mean
         if trainer.state.global_step % config.logging.interval_steps == 0:
             metric_sink(_metric_record(metrics, trainer.state))
+        if trainer.state.global_step % config.evaluation.interval_steps == 0:
+            final_evaluation = evaluator.evaluate(evaluation_prompts)
+            last_evaluation_step = trainer.state.global_step
+            metric_sink(_evaluation_record(final_evaluation, trainer.state))
         if (
             checkpoint_directory is not None
             and trainer.state.global_step % config.checkpoint.interval_steps == 0
@@ -181,11 +220,19 @@ def train_from_config(
                 tokenizer=loaded.tokenizer,
             )
 
+    if last_evaluation_step != trainer.state.global_step:
+        final_evaluation = evaluator.evaluate(evaluation_prompts)
+        metric_sink(_evaluation_record(final_evaluation, trainer.state))
+
     return TrainingRunSummary(
         experiment=config.experiment.name,
         global_step=trainer.state.global_step,
         policy_version=trainer.state.policy_version,
         generated_tokens=generated_tokens,
         final_reward_mean=final_reward_mean,
+        initial_evaluation_reward=initial_evaluation.mean_reward,
+        final_evaluation_reward=final_evaluation.mean_reward,
+        initial_pass_rate=initial_evaluation.pass_rate,
+        final_pass_rate=final_evaluation.pass_rate,
     )
 
