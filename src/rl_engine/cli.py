@@ -35,11 +35,23 @@ def validate_config(
 
 @app.command()
 def train(
-    config: Annotated[Path, typer.Option(exists=True, dir_okay=False)],
+    config: Annotated[Path | None, typer.Option(exists=True, dir_okay=False)] = None,
+    resume: Annotated[Path | None, typer.Option(exists=True, file_okay=False)] = None,
+    output: Annotated[Path | None, typer.Option(file_okay=False)] = None,
 ) -> None:
     """Run a single-process language-model training experiment."""
 
-    summary = train_from_config(load_config(config))
+    if config is None and resume is None:
+        raise typer.BadParameter("provide --config for a new run or --resume for a checkpoint")
+    loaded_config = load_config(config if config is not None else resume / "config.yaml")
+    checkpoint_output = resume.parent if resume is not None else None
+    default_output = Path("outputs") / loaded_config.experiment.name
+    output_directory = output or checkpoint_output or default_output
+    summary = train_from_config(
+        loaded_config,
+        checkpoint_directory=output_directory,
+        resume_checkpoint=resume,
+    )
     typer.echo(f"complete: {summary.experiment} at step {summary.global_step}")
 
 

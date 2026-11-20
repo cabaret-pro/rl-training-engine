@@ -5,6 +5,7 @@ import json
 import random
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -17,6 +18,7 @@ from rl_engine.rewards.arithmetic import ArithmeticReward
 from rl_engine.rollout.buffer import ExperienceBuffer
 from rl_engine.rollout.generator import SamplingConfig, TransformersRolloutBackend
 from rl_engine.rollout.sampler import PromptSampler
+from rl_engine.training.checkpoint import load_checkpoint, save_checkpoint
 from rl_engine.training.coordinator import (
     CoordinatorConfig,
     CoordinatorMetrics,
@@ -84,6 +86,8 @@ def train_from_config(
     config: EngineConfig,
     *,
     metric_sink: MetricSink = console_metric_sink,
+    checkpoint_directory: str | Path | None = None,
+    resume_checkpoint: str | Path | None = None,
 ) -> TrainingRunSummary:
     """Run arithmetic GRPO until ``training.max_steps`` optimizer updates complete."""
 
@@ -120,6 +124,15 @@ def train_from_config(
         )
     )
     sampler = PromptSampler(prompts, seed=config.experiment.seed)
+    if resume_checkpoint is not None:
+        load_checkpoint(
+            resume_checkpoint,
+            policy=policy,
+            optimizer=optimizer,
+            sampler=sampler,
+            trainer_state=trainer.state,
+            expected_config=config,
+        )
     backend = TransformersRolloutBackend(
         loaded.model,
         loaded.tokenizer,
@@ -154,6 +167,19 @@ def train_from_config(
         final_reward_mean = metrics.update.reward_mean
         if trainer.state.global_step % config.logging.interval_steps == 0:
             metric_sink(_metric_record(metrics, trainer.state))
+        if (
+            checkpoint_directory is not None
+            and trainer.state.global_step % config.checkpoint.interval_steps == 0
+        ):
+            save_checkpoint(
+                Path(checkpoint_directory) / f"checkpoint-{trainer.state.global_step}",
+                policy=policy,
+                optimizer=optimizer,
+                sampler=sampler,
+                trainer_state=trainer.state,
+                config=config,
+                tokenizer=loaded.tokenizer,
+            )
 
     return TrainingRunSummary(
         experiment=config.experiment.name,
