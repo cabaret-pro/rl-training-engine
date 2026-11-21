@@ -1,0 +1,56 @@
+{
+  "artifact_version": 1,
+  "config": "configs/experiments/arithmetic_grpo_smoke.yaml",
+  "engine_revision": "d33bb89e517bad40fe146ebf578596858badad0b",
+  "experiment": "arithmetic-grpo-qwen-smoke",
+  "hardware": {
+    "machine": "arm64",
+    "memory_bytes": 25769803776,
+    "platform": "macOS-15.7.9-arm64-arm-64bit",
+    "resolved_device": "cpu"
+  },
+  "model": {
+    "dtype": "float32",
+    "name": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775"
+  },
+  "result": {
+    "checkpoint_created": true,
+    "evaluation_after": {
+      "generated_tokens": 16,
+      "latency_ms": 339.1257500043139,
+      "mean_reward": 0.0,
+      "pass_rate": 0.0
+    },
+    "evaluation_before": {
+      "generated_tokens": 16,
+      "latency_ms": 383.5937909898348,
+      "mean_reward": 0.0,
+      "pass_rate": 0.0
+    },
+    "global_step": 1,
+    "policy_version": 1,
+    "training": {
+      "behavior_kl": 0.0,
+      "clip_fraction": 0.0,
+      "generated_tokens": 16,
+      "grad_norm": 0.0,
+      "loss": 0.0,
+      "mean_ratio": 1.0,
+      "policy_staleness": 0,
+      "reward_mean": 0.0,
+      "reward_std": 0.0,
+      "rollout_latency_ms": 473.8261660095304,
+      "trajectories": 2,
+      "update_latency_ms": 1046.8807920115069
+    }
+  },
+  "software": {
+    "numpy": "2.4.6",
+    "python": "3.11.10",
+    "torch": "2.15.0",
+    "transformers": "4.57.6"
+  },
+  "status": "compatibility_smoke_passed"
+}
+

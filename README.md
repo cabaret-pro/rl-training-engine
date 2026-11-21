@@ -10,9 +10,11 @@ gradients are independently verified.
 
 ## Status
 
-Early development. The first milestone covers validated configuration, trajectory data contracts,
-reward interfaces, and a numerically tested REINFORCE baseline. GRPO is the first major language
-model training milestone.
+Active development. The repository now includes numerically tested REINFORCE and GRPO objectives,
+a synchronous Transformers training path, deterministic checkpoint recovery, held-out arithmetic
+evaluation, and structured experiment metrics. A pinned Qwen2.5-0.5B-Instruct CPU compatibility
+run has completed through generation, backpropagation, evaluation, and checkpointing. See the
+[smoke-test report](docs/experiments/qwen_0_5b_cpu_smoke.md).
 
 ## Development
 
@@ -22,6 +24,16 @@ Python 3.11 or newer and [uv](https://docs.astral.sh/uv/) are required.
 uv sync --extra dev
 uv run pytest
 uv run ruff check .
+```
+
+Run the offline-tested CLI path with a configured model:
+
+```bash
+uv sync --extra dev --extra lm
+uv run rl-engine validate-config --config configs/experiments/arithmetic_grpo_smoke.yaml
+uv run rl-engine train \
+  --config configs/experiments/arithmetic_grpo_smoke.yaml \
+  --output outputs/arithmetic-grpo-qwen-smoke
 ```
 
 ## Design principles
