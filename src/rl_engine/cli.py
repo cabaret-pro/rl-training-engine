@@ -1,12 +1,15 @@
 """Command-line entry point for the RL training engine."""
 
+import json
+from dataclasses import asdict
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
 from rl_engine.config import load_config
-from rl_engine.training.runtime import train_from_config
+from rl_engine.observability.logger import CompositeMetricSink, JsonlMetricSink
+from rl_engine.training.runtime import console_metric_sink, train_from_config
 
 app = typer.Typer(no_args_is_help=True, help="Train and validate reinforcement learning policies.")
 
@@ -47,10 +50,22 @@ def train(
     checkpoint_output = resume.parent if resume is not None else None
     default_output = Path("outputs") / loaded_config.experiment.name
     output_directory = output or checkpoint_output or default_output
+    output_directory.mkdir(parents=True, exist_ok=True)
+    metric_sink = CompositeMetricSink(
+        [
+            console_metric_sink,
+            JsonlMetricSink(output_directory / "metrics.jsonl", append=resume is not None),
+        ]
+    )
     summary = train_from_config(
         loaded_config,
+        metric_sink=metric_sink,
         checkpoint_directory=output_directory,
         resume_checkpoint=resume,
+    )
+    (output_directory / "run_summary.json").write_text(
+        json.dumps(asdict(summary), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
     typer.echo(f"complete: {summary.experiment} at step {summary.global_step}")
 

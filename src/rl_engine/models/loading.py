@@ -59,7 +59,7 @@ def load_causal_lm(config: ModelConfig) -> LoadedCausalLM:
         tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(
         config.name,
-        torch_dtype=dtype,
+        dtype=dtype,
         **revision_kwargs,
     )
     model.to(device)
