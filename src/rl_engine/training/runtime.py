@@ -15,6 +15,7 @@ from rl_engine.evaluation.arithmetic import ArithmeticTaskConfig, generate_arith
 from rl_engine.evaluation.evaluator import EvaluationMetrics, LanguageModelEvaluator
 from rl_engine.models.loading import load_causal_lm
 from rl_engine.models.policy import CausalLMPolicy
+from rl_engine.observability.system_metrics import collect_run_metadata
 from rl_engine.rewards.arithmetic import ArithmeticReward
 from rl_engine.rollout.buffer import ExperienceBuffer
 from rl_engine.rollout.generator import SamplingConfig, TransformersRolloutBackend
@@ -108,6 +109,7 @@ def train_from_config(
 
     algorithm = validate_training_runtime(config)
     seed_everything(config.experiment.seed)
+    metric_sink(collect_run_metadata(config))
     loaded = load_causal_lm(config.model)
     reference_model = copy.deepcopy(loaded.model) if algorithm.kl_coefficient > 0 else None
     policy = CausalLMPolicy(loaded.model)

@@ -99,11 +99,12 @@ def test_local_transformers_model_runs_complete_training_step(tmp_path: Path) ->
     assert summary.policy_version == 1
     assert summary.generated_tokens >= 2
     assert [record["kind"] for record in records] == [
+        "run_metadata",
         "evaluation",
         "training",
         "evaluation",
     ]
-    assert records[0]["step"] == 0
+    assert records[1]["step"] == 0
     assert records[-1]["step"] == 1
     assert summary.initial_pass_rate >= 0
     assert summary.final_pass_rate >= 0
