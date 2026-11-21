@@ -15,6 +15,16 @@ def test_example_configs_are_valid(filename: str) -> None:
     assert config.training.max_steps > 0
 
 
+@pytest.mark.parametrize(
+    "filename",
+    ["arithmetic_grpo.yaml", "arithmetic_grpo_smoke.yaml"],
+)
+def test_arithmetic_experiment_configs_are_valid_and_revision_pinned(filename: str) -> None:
+    config = load_config(ROOT / "configs" / "experiments" / filename)
+
+    assert config.model.revision == "7ae557604adf67be50417f59c2c2f167def9a775"
+
+
 def test_grpo_config_uses_discriminated_model() -> None:
     config = load_config(ROOT / "configs" / "grpo.yaml")
 

@@ -1,0 +1,41 @@
+experiment:
+  name: arithmetic-grpo-qwen-0.5b
+  seed: 42
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  revision: 7ae557604adf67be50417f59c2c2f167def9a775
+  dtype: bfloat16
+  device: auto
+algorithm:
+  name: grpo
+  group_size: 8
+  clip_epsilon: 0.2
+  kl_coefficient: 0.01
+  advantage_epsilon: 1.0e-6
+  loss_normalization: token_mean
+  optimization_epochs: 1
+training:
+  learning_rate: 1.0e-6
+  batch_size: 8
+  gradient_accumulation_steps: 4
+  max_steps: 1000
+  max_grad_norm: 1.0
+rollout:
+  backend: transformers
+  temperature: 1.0
+  top_p: 1.0
+  top_k: 0
+  max_completion_tokens: 256
+reward:
+  name: arithmetic
+  success_reward: 1.0
+  failure_reward: 0.0
+evaluation:
+  interval_steps: 100
+  num_examples: 200
+checkpoint:
+  interval_steps: 100
+  keep_last: 3
+logging:
+  backend: console
+  interval_steps: 10
